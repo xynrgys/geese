@@ -1,3 +1,4 @@
+pub mod harness;
 pub mod edit;
 pub mod shell;
 pub mod tree;

@@ -53,7 +53,7 @@ impl EditTools {
 
         let is_new = !path.exists();
 
-        match fs::write(path, &params.content) {
+        let res = match fs::write(&path, &params.content) {
             Ok(()) => {
                 let line_count = params.content.lines().count();
                 let action = if is_new { "Created" } else { "Wrote" };
@@ -68,7 +68,8 @@ impl EditTools {
                 params.path, error
             ))
             .with_priority(0.0)]),
-        }
+        };
+        crate::agents::platform_extensions::developer::harness::Harness::intercept(&path, res)
     }
 
     pub fn file_edit(&self, params: FileEditParams) -> CallToolResult {
@@ -109,7 +110,7 @@ impl EditTools {
             1 => {
                 let new_content = content.replacen(&params.before, &params.after, 1);
 
-                match fs::write(&path, &new_content) {
+                let res = match fs::write(&path, &new_content) {
                     Ok(()) => {
                         let old_lines = params.before.lines().count();
                         let new_lines = params.after.lines().count();
@@ -124,7 +125,8 @@ impl EditTools {
                         params.path, error
                     ))
                     .with_priority(0.0)]),
-                }
+                };
+                crate::agents::platform_extensions::developer::harness::Harness::intercept(&path, res)
             }
             n => {
                 let mut msg = format!(
