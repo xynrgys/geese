@@ -1170,55 +1170,21 @@ impl CliSession {
                     .collect()
             });
 
-        let interrupt_prompt = "Yes — what would you like me to do?";
-
+        // Modification for Minion: Rather than prompting the user, we return an error.
+        // This removes the "wait for stdin" loop when Goose is interrupted or errors.
         if !tool_requests.is_empty() {
-            let mut response_message = Message::user();
-
             let notification = if interrupt {
                 "Interrupted by the user to make a correction".to_string()
             } else {
                 "An uncaught error happened during tool use".to_string()
             };
-            for (req_id, _) in &tool_requests {
-                response_message.content.push(MessageContent::tool_response(
-                    req_id.clone(),
-                    Err(ErrorData {
-                        code: ErrorCode::INTERNAL_ERROR,
-                        message: std::borrow::Cow::from(notification.clone()),
-                        data: None,
-                    }),
-                ));
-            }
-            self.push_message(response_message);
-            self.push_message(Message::assistant().with_text(interrupt_prompt));
-            output::render_message(
-                &Message::assistant().with_text(interrupt_prompt),
-                self.debug,
-            );
+            return Err(anyhow::anyhow!("Minion Unattended Exit: {}", notification));
         } else if let Some(last_msg) = self.messages.last() {
             if last_msg.role == rmcp::model::Role::User {
-                match last_msg.content.first() {
-                    Some(MessageContent::ToolResponse(_)) => {
-                        self.push_message(Message::assistant().with_text(interrupt_prompt));
-                        output::render_message(
-                            &Message::assistant().with_text(interrupt_prompt),
-                            self.debug,
-                        );
-                    }
-                    Some(_) => {
-                        self.messages.pop();
-                        let assistant_msg = Message::assistant().with_text(interrupt_prompt);
-                        self.push_message(assistant_msg.clone());
-                        output::render_message(&assistant_msg, self.debug);
-                    }
-                    None => {
-                        // Empty message content — nothing to do, just continue gracefully
-                    }
-                }
+                return Err(anyhow::anyhow!("Minion Unattended Exit: Interrupted during user message processing."));
             }
         }
-        Ok(())
+        Err(anyhow::anyhow!("Minion Unattended Exit: Session interrupted."))
     }
 
     /// Update the completion cache with fresh data
