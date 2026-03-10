@@ -1,0 +1,19 @@
+[project]
+name = "toolshed"
+version = "0.1.0"
+description = "Central MCP Server for Goose with common tools"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "beautifulsoup4>=4.12.3",
+    "html2text>=2024.2.26",
+    "mcp[cli]>=1.2.0",
+    "requests>=2.32.3",
+]
+
+[project.scripts]
+toolshed = "toolshed:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
