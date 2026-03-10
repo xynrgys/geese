@@ -557,6 +557,7 @@ async fn configure_session_prompts(
         tracing::warn!("Failed to save extension state: {}", e);
     }
 
+
     if let Some(ref additional_prompt) = session_config.additional_system_prompt {
         session
             .agent
